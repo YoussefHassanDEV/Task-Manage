@@ -25,10 +25,8 @@ public class TaskController {
 
     @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE}, consumes = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<TaskResponse> create(Authentication auth, @RequestBody @Valid TaskRequest req) {
-
         TaskResponse resp = taskService.create(auth.getName(), req);
         return ResponseEntity.status(HttpStatus.CREATED).contentType(MediaType.APPLICATION_JSON).body(resp);
-
     }
 
     @GetMapping
@@ -37,12 +35,14 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskResponse> updateStatus(Authentication auth, @PathVariable Long id, @RequestBody @Valid UpdateTaskStatusRequest req) {
+    public ResponseEntity<TaskResponse> updateStatus(Authentication auth,
+                                                     @PathVariable("id") Long id,
+                                                     @RequestBody @Valid UpdateTaskStatusRequest req) {
         return ResponseEntity.ok(taskService.updateStatus(auth.getName(), id, req));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(Authentication auth, @PathVariable Long id) {
+    public ResponseEntity<Void> delete(Authentication auth, @PathVariable("id") Long id) {
         taskService.delete(auth.getName(), id);
         return ResponseEntity.noContent().build();
     }

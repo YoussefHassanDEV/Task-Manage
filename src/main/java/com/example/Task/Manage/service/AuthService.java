@@ -40,6 +40,7 @@ public class AuthService {
         User u = User.builder()
                 .email(req.email())
                 .passwordHash(passwordEncoder.encode(req.password()))
+                .name(req.name())
                 .build();
         userRepository.save(u);
         return jwtUtils.generateAccessToken(req.email());

@@ -9,7 +9,6 @@ import com.example.Task.Manage.model.Task;
 import com.example.Task.Manage.model.User;
 import com.example.Task.Manage.repository.TaskRepository;
 import com.example.Task.Manage.repository.UserRepository;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -45,18 +44,19 @@ public class TaskService {
         User owner = requireUser(email);
         return taskRepository.findByOwner(owner).stream().map(this::toDto).toList();
     }
+
     public TaskResponse updateStatus(String email, Long id, UpdateTaskStatusRequest req) {
         User owner = requireUser(email);
-        Task t = taskRepository.findById(id).orElseThrow(() -> new NotFoundException("Task not found"));
-        if (!t.getOwner().getId().equals(owner.getId())) throw new AccessDeniedException("Forbidden");
+        Task t = taskRepository.findByIdAndOwner(id, owner)
+                .orElseThrow(() -> new NotFoundException("Task not found"));
         t.setStatus(req.status());
         return toDto(taskRepository.save(t));
     }
 
     public void delete(String email, Long id) {
         User owner = requireUser(email);
-        Task t = taskRepository.findById(id).orElseThrow(() -> new NotFoundException("Task not found"));
-        if (!t.getOwner().getId().equals(owner.getId())) throw new AccessDeniedException("Forbidden");
+        Task t = taskRepository.findByIdAndOwner(id, owner)
+                .orElseThrow(() -> new NotFoundException("Task not found"));
         taskRepository.delete(t);
     }
 
