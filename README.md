@@ -1,36 +1,37 @@
 
+
 # 📌 Task-Manage API
 
 A clean **Spring Boot REST API** for **user authentication** and **task management**, designed with best practices for **security, architecture, and maintainability**.
 
 ---
 
+## 📑 Table of Contents
+
+* [✨ Features](#-features)
+* [🛠 Tech Stack](#-tech-stack)
+* [📥 Installation](#-installation)
+* [⚙️ Configuration](#️-configuration)
+* [📡 API Endpoints](#-api-endpoints)
+
+  * [🔐 Auth](#-auth)
+  * [📋 Tasks](#-tasks-require-authorization-bearer-access)
+* [⚠️ Error Handling](#️-error-handling)
+* [🔐 Security Highlights](#-security-highlights)
+* [🗂 Data Model](#-data-model)
+* [📂 Project Structure](#-project-structure)
+* [✅ Example Flow](#-example-flow)
+* [🧪 Testing](#-testing)
+* [📊 Evaluation Criteria (Assignment Goals)](#-evaluation-criteria-assignment-goals)
+
+---
+
 ## ✨ Features
 
-* 🔑 **Authentication & Authorization**
-
-  * Register new users with **BCrypt password hashing**
-  * Login with **JWT tokens** (access + refresh)
-  * Refresh token rotation
-  * Logout with **token blacklist**
-
-* 🗂 **Task Management**
-
-  * Create, list, update, and delete tasks
-  * Each task belongs to its authenticated owner
-  * Secure access control: only the owner can manage their tasks
-
-* ⚡ **Security**
-
-  * Stateless authentication with JWT
-  * Custom filter for token validation
-  * Structured error handling with `@RestControllerAdvice`
-
-* 🛠 **Developer-Friendly**
-
-  * **H2 in-memory database** for easy development
-  * H2 Console available at `/h2-console`
-  * DTO separation, global exception handling, and clean project structure
+* 🔑 **Authentication & Authorization** (JWT, refresh, logout with blacklist)
+* 🗂 **Task Management** (CRUD, owner-only access)
+* ⚡ **Security** (custom JWT filter, global error handling)
+* 🛠 **Developer-Friendly** (H2 DB, console at `/h2-console`)
 
 ---
 
@@ -40,8 +41,8 @@ A clean **Spring Boot REST API** for **user authentication** and **task manageme
 * **Spring Security** with JWT
 * **Spring Data JPA** + **H2 Database**
 * **Jakarta Bean Validation**
-* **Lombok** (for boilerplate reduction)
-* **JUnit + Spring Security Test** (for testing)
+* **Lombok**
+* **JUnit + Spring Security Test**
 
 ---
 
@@ -65,11 +66,8 @@ mvn clean install
 Edit `src/main/resources/application.properties`:
 
 ```properties
-# App JWT secret
 app.jwt.secret=change-this-to-a-long-random-secret-string-at-least-32-bytes
 ```
-
-*(Change it to a long, random string for security.)*
 
 ### 4️⃣ Run the app
 
@@ -77,8 +75,8 @@ app.jwt.secret=change-this-to-a-long-random-secret-string-at-least-32-bytes
 mvn spring-boot:run
 ```
 
-* API: [http://localhost:8080](http://localhost:8080)
-* H2 Console: [http://localhost:8080/h2-console](http://localhost:8080)
+* API → [http://localhost:8080](http://localhost:8080)
+* H2 Console → [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
 
   * JDBC URL: `jdbc:h2:mem:todo`
   * User: `sa`
@@ -119,12 +117,12 @@ app.jwt.refreshExpirationMillis=604800000  # 7 days
 
 ### 🔐 Auth
 
-| Method | Endpoint         | Description         |
-| ------ | ---------------- | ------------------- |
-| `POST` | `/auth/register` | Register a new user |
-| `POST` | `/auth/login`    | Login, get tokens   |
-| `POST` | `/auth/refresh`  | Refresh tokens      |
-| `POST` | `/auth/logout`   | Logout + blacklist  |
+| Method | Endpoint         | Description        |
+| ------ | ---------------- | ------------------ |
+| `POST` | `/auth/register` | Register new user  |
+| `POST` | `/auth/login`    | Login, get tokens  |
+| `POST` | `/auth/refresh`  | Refresh tokens     |
+| `POST` | `/auth/logout`   | Logout & blacklist |
 
 #### Example: Register
 
@@ -190,11 +188,11 @@ Errors return structured JSON:
 
 ## 🔐 Security Highlights
 
-* **Stateless**: `SessionCreationPolicy.STATELESS`
-* **BCrypt password hashing**
-* **JWT access & refresh tokens**
-* **Blacklist service** invalidates tokens on logout
-* **Custom filters** for authentication & error handling
+* Stateless JWT authentication
+* BCrypt password hashing
+* Refresh token rotation
+* Logout with blacklist service
+* Custom `AuthenticationEntryPoint` & `AccessDeniedHandler`
 
 ---
 
@@ -203,14 +201,14 @@ Errors return structured JSON:
 ### 👤 User
 
 * `id`
-* `email` *(unique, required)*
-* `passwordHash` *(required)*
-* `name` *(required)*
+* `email` *(unique)*
+* `passwordHash`
+* `name`
 
 ### ✅ Task
 
 * `id`
-* `title` *(not blank)*
+* `title` *(required)*
 * `description`
 * `status` *(OPEN / DONE)*
 * `owner` *(ManyToOne → User)*
@@ -221,12 +219,12 @@ Errors return structured JSON:
 
 ```
 com.example.Task.Manage
- ├── config/          # Security configuration
+ ├── config/          # Security config
  ├── controller/      # REST controllers
  ├── dto/             # DTOs
  ├── exception/       # Global exception handling
- ├── model/           # Entities (User, Task)
- ├── repository/      # Spring Data JPA repositories
+ ├── model/           # Entities
+ ├── repository/      # JPA repositories
  ├── security/        # JWT, filters, blacklist
  └── service/         # Business logic
 ```
@@ -235,17 +233,17 @@ com.example.Task.Manage
 
 ## ✅ Example Flow
 
-1. **Register** a new user
-2. **Login** → get `accessToken` & `refreshToken`
-3. Use `accessToken` for `/tasks`
-4. **Refresh** tokens using `/auth/refresh`
-5. **Logout** → access token blacklisted
+1. **Register** → create user
+2. **Login** → get `accessToken` + `refreshToken`
+3. Use `accessToken` → access `/tasks`
+4. **Refresh** → rotate tokens
+5. **Logout** → blacklist token
 
 ---
 
 ## 🧪 Testing
 
-Run tests with:
+Run:
 
 ```bash
 mvn test
@@ -253,22 +251,24 @@ mvn test
 
 Includes:
 
-* Unit tests for authentication & task APIs
+* Unit tests for auth & task endpoints
 * Security tests with `spring-security-test`
 
 ---
 
 ## 📊 Evaluation Criteria (Assignment Goals)
 
-* RESTful API with correct HTTP status codes
-* Clean Spring Boot layers: Controller → Service → Repository
-* Authentication & Security with JWT and BCrypt
-* Global Exception Handling with `@RestControllerAdvice`
-* In-memory H2 DB, no external setup required
-* DTO separation from entities
-* Example requests provided with `curl`
+* ✅ RESTful endpoints with proper status codes
+* ✅ Controller → Service → Repository architecture
+* ✅ Authentication & Security with JWT + BCrypt
+* ✅ Global error handling with `@RestControllerAdvice`
+* ✅ DTOs & Entities separated
+* ✅ In-memory H2 DB (no external setup)
+* ✅ Example curl requests included
+* ✅ Ready for GitHub evaluation
 
 ---
 
 💡 *Built with ❤️ using Spring Boot*
 
+---
