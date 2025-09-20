@@ -1,215 +1,173 @@
 
-# Task-Manage API
+# 📌 Task-Manage API
 
-A clean Spring Boot REST API for authentication and task management with:
-- 🔑 JWT-based security
-- 🔒 BCrypt password hashing
-- 🗄 H2 in-memory database
-- 📦 DTOs & structured JSON error handling
-- 🔄 Refresh-token rotation
-- 🚫 Token blacklist on logout
+A clean **Spring Boot REST API** for **user authentication** and **task management**, designed with best practices for **security, architecture, and maintainability**.
 
-## Features
+---
 
-- User Registration  
-  Passwords hashed via BCrypt, persisted with JPA, validated using Jakarta Bean Validation.
+## ✨ Features
 
-- Authentication  
-  Login issues:
-  - Short-lived access token
-  - Long-lived refresh token  
-  Refresh endpoint rotates refresh tokens.
+* 🔑 **Authentication & Authorization**
 
-- Stateless Security  
-  - Custom JWT filter  
-  - SecurityFilterChain allows /auth/** and /h2-console/**  
-  - Protects all other endpoints
+  * Register new users with **BCrypt password hashing**
+  * Login with **JWT tokens** (access + refresh)
+  * Refresh token rotation
+  * Logout with **token blacklist**
 
-- Global Error Handling  
-  Unified ErrorResponse for:
-  - Validation errors  
-  - Unauthorized & forbidden access  
-  - Resource not found
+* 🗂 **Task Management**
 
-- H2 Database for development  
-  Console enabled at /h2-console.
+  * Create, list, update, and delete tasks
+  * Each task belongs to its authenticated owner
+  * Secure access control: only the owner can manage their tasks
 
-## Tech Stack
+* ⚡ **Security**
 
-- Spring Boot – Web, Security, JPA  
-- H2 Database – in-memory persistence  
-- JJWT – token creation & validation  
-- Maven – build & dependency management  
-- Java 17+
+  * Stateless authentication with JWT
+  * Custom filter for token validation
+  * Structured error handling with `@RestControllerAdvice`
 
-## Quickstart
+* 🛠 **Developer-Friendly**
 
-1) Clone
+  * **H2 in-memory database** for easy development
+  * H2 Console available at `/h2-console`
+  * DTO separation, global exception handling, and clean project structure
+
+---
+
+## 🛠 Tech Stack
+
+* **Spring Boot 3.3+**
+* **Spring Security** with JWT
+* **Spring Data JPA** + **H2 Database**
+* **Jakarta Bean Validation**
+* **Lombok** (for boilerplate reduction)
+* **JUnit + Spring Security Test** (for testing)
+
+---
+
+## 📥 Installation
+
+### 1️⃣ Clone the repository
+
 ```bash
 git clone https://github.com/YoussefHassanDEV/Task-Manage.git
 cd Task-Manage
 ```
 
-2) Build
+### 2️⃣ Build the project
+
 ```bash
 mvn clean install
 ```
 
-3) Configure properties  
-Edit src/main/resources/application.properties as needed:
-- app.jwt.secret → a long, random string (32+ characters)
-- app.jwt.accessExpirationMillis → access token lifetime in ms
-- app.jwt.refreshExpirationMillis → refresh token lifetime in ms
+### 3️⃣ Configure application
 
-4) Run
+Edit `src/main/resources/application.properties`:
+
+```properties
+# App JWT secret
+app.jwt.secret=change-this-to-a-long-random-secret-string-at-least-32-bytes
+```
+
+*(Change it to a long, random string for security.)*
+
+### 4️⃣ Run the app
+
 ```bash
 mvn spring-boot:run
 ```
-Service: http://localhost:8080
 
-5) H2 Console (dev only)  
-- URL: http://localhost:8080/h2-console  
-- JDBC URL: jdbc:h2:mem:todo  
-- User: sa  
-- Password: (blank)
+* API: [http://localhost:8080](http://localhost:8080)
+* H2 Console: [http://localhost:8080/h2-console](http://localhost:8080)
 
-## Configuration
+  * JDBC URL: `jdbc:h2:mem:todo`
+  * User: `sa`
+  * Password: *(blank)*
 
-src/main/resources/application.properties
+---
+
+## ⚙️ Configuration
+
+`src/main/resources/application.properties`
+
 ```properties
 spring.application.name=Task-Manage
 server.port=8080
 
-# H2 Database
+# H2
 spring.datasource.url=jdbc:h2:mem:todo;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
 spring.datasource.username=sa
 spring.datasource.password=
 spring.datasource.driverClassName=org.h2.Driver
 
-# JPA
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
 
-# H2 Console
 spring.h2.console.enabled=true
 spring.h2.console.path=/h2-console
 
 # JWT
 app.jwt.secret=change-this-to-a-long-random-secret-string-at-least-32-bytes
-app.jwt.accessExpirationMillis=900000        # 15 minutes
-app.jwt.refreshExpirationMillis=604800000    # 7 days
-
-# JSON date output as ISO-8601
-spring.jackson.serialization.write-dates-as-timestamps=false
+app.jwt.accessExpirationMillis=900000      # 15 minutes
+app.jwt.refreshExpirationMillis=604800000  # 7 days
 ```
 
-Add Java 8 date/time support (already included if using the managed BOM):
-```xml
-<dependency>
-  <groupId>com.fasterxml.jackson.datatype</groupId>
-  <artifactId>jackson-datatype-jsr310</artifactId>
-</dependency>
-```
+---
 
-## API Endpoints
+## 📡 API Endpoints
 
-All JSON requests and responses use Content-Type: application/json.
+### 🔐 Auth
 
-### Auth
+| Method | Endpoint         | Description         |
+| ------ | ---------------- | ------------------- |
+| `POST` | `/auth/register` | Register a new user |
+| `POST` | `/auth/login`    | Login, get tokens   |
+| `POST` | `/auth/refresh`  | Refresh tokens      |
+| `POST` | `/auth/logout`   | Logout + blacklist  |
 
-| Method | Endpoint         | Description              |
-|-------|-------------------|--------------------------|
-| POST  | /auth/register    | Register new user        |
-| POST  | /auth/login       | Login & get tokens       |
-| POST  | /auth/refresh     | Rotate refresh token     |
-| POST  | /auth/logout      | Logout & blacklist token |
+#### Example: Register
 
-Register (201 Created, no body)
 ```bash
 curl -X POST http://localhost:8080/auth/register \
 -H "Content-Type: application/json" \
 -d '{"email":"user@example.com","password":"mypassword","name":"John Doe"}'
 ```
 
-Login (200 OK)
+#### Example: Login
+
 ```bash
 curl -X POST http://localhost:8080/auth/login \
 -H "Content-Type: application/json" \
 -d '{"email":"user@example.com","password":"mypassword"}'
 ```
-Response
-```json
-{
-  "accessToken": "<ACCESS>",
-  "expiresInMillis": 900000,
-  "refreshToken": "<REFRESH>",
-  "refreshExpiresInMillis": 604800000
-}
-```
 
-Refresh (200 OK) — rotates refresh tokens
-```bash
-curl -X POST http://localhost:8080/auth/refresh \
--H "Content-Type: application/json" \
--d '{"refreshToken":"<REFRESH>"}'
-```
+---
 
-Logout (200 OK, no body) — blacklists current access token until expiry
-```bash
-curl -X POST http://localhost:8080/auth/logout \
--H "Authorization: Bearer <ACCESS>"
-```
+### 📋 Tasks (Require `Authorization: Bearer <ACCESS>`)
 
-### Tasks (requires Authorization: Bearer <ACCESS>)
+| Method   | Endpoint      | Description        |
+| -------- | ------------- | ------------------ |
+| `POST`   | `/tasks`      | Create a new task  |
+| `GET`    | `/tasks`      | List user’s tasks  |
+| `PUT`    | `/tasks/{id}` | Update task status |
+| `DELETE` | `/tasks/{id}` | Delete a task      |
 
-| Method | Endpoint      | Description |
-|--------|---------------|-------------|
-| POST   | /tasks        | Create task |
-| GET    | /tasks        | List tasks  |
-| PUT    | /tasks/{id}   | Update task |
-| DELETE | /tasks/{id}   | Delete task |
+#### Example: Create Task
 
-Create (201 Created)
 ```bash
 curl -X POST http://localhost:8080/tasks \
 -H "Authorization: Bearer <ACCESS>" \
 -H "Content-Type: application/json" \
 -d '{"title":"My Task","description":"Details","status":"OPEN"}'
 ```
-Response
-```json
-{
-  "id": 1,
-  "title": "My Task",
-  "description": "Details",
-  "status": "OPEN"
-}
-```
 
-List (200 OK)
-```bash
-curl -X GET http://localhost:8080/tasks \
--H "Authorization: Bearer <ACCESS>"
-```
+---
 
-Update status (200 OK)
-```bash
-curl -X PUT http://localhost:8080/tasks/1 \
--H "Authorization: Bearer <ACCESS>" \
--H "Content-Type: application/json" \
--d '{"status":"DONE"}'
-```
+## ⚠️ Error Handling
 
-Delete (204 No Content)
-```bash
-curl -X DELETE http://localhost:8080/tasks/1 \
--H "Authorization: Bearer <ACCESS>"
-```
+Errors return structured JSON:
 
-## Error Handling
-
-All errors return a structured JSON body like:
 ```json
 {
   "timestamp": "2025-09-20T10:00:00Z",
@@ -217,94 +175,103 @@ All errors return a structured JSON body like:
   "error": "Bad Request",
   "message": "Validation failed",
   "path": "/auth/register",
-  "validationErrors": [
-    "email: must be a well-formed email address",
-    "password: must not be blank"
-  ]
+  "validationErrors": ["email: must be a valid email"]
 }
 ```
 
-Common HTTP statuses:
-- 400 — Validation errors, bad credentials, bad refresh token  
-- 401 — Unauthorized (missing/invalid token)  
-- 403 — Forbidden (accessing another user’s task)  
-- 404 — Not Found (task not found)
+### Common Status Codes
 
-Note: validationErrors is a list of strings in this implementation.
+* `400` → Validation errors, bad credentials
+* `401` → Unauthorized (invalid/missing token)
+* `403` → Forbidden (accessing another user’s task)
+* `404` → Task not found
 
-## Security
+---
 
-- Stateless: SessionCreationPolicy.STATELESS  
-- CSRF disabled for API-only backend  
-- Custom JWT filter reads Authorization: Bearer <TOKEN>  
-- Access tokens are blacklisted on logout until expiration  
-- Refresh tokens are rotated at /auth/refresh
+## 🔐 Security Highlights
 
-## Data Model
+* **Stateless**: `SessionCreationPolicy.STATELESS`
+* **BCrypt password hashing**
+* **JWT access & refresh tokens**
+* **Blacklist service** invalidates tokens on logout
+* **Custom filters** for authentication & error handling
 
-User
-- id
-- email (unique, required)
-- passwordHash (required)
-- name (required)
+---
 
-Task
-- id
-- title (not blank)
-- description
-- status (OPEN/DONE)
-- owner (ManyToOne → User)
+## 🗂 Data Model
 
-## Project Structure
+### 👤 User
+
+* `id`
+* `email` *(unique, required)*
+* `passwordHash` *(required)*
+* `name` *(required)*
+
+### ✅ Task
+
+* `id`
+* `title` *(not blank)*
+* `description`
+* `status` *(OPEN / DONE)*
+* `owner` *(ManyToOne → User)*
+
+---
+
+## 📂 Project Structure
 
 ```
 com.example.Task.Manage
  ├── config/          # Security configuration
  ├── controller/      # REST controllers
- ├── DTOs/            # Request/Response DTOs
+ ├── dto/             # DTOs
  ├── exception/       # Global exception handling
- ├── model/           # JPA entities
+ ├── model/           # Entities (User, Task)
  ├── repository/      # Spring Data JPA repositories
- ├── security/        # JWT utils, filter, blacklist
+ ├── security/        # JWT, filters, blacklist
  └── service/         # Business logic
 ```
 
-## Example Flow
+---
 
-1) Register user → 201  
-2) Login → receive accessToken + refreshToken  
-3) Use accessToken → call /tasks  
-4) Refresh with refreshToken → get new tokens  
-5) Logout → blacklist access token
+## ✅ Example Flow
 
-## Testing
+1. **Register** a new user
+2. **Login** → get `accessToken` & `refreshToken`
+3. Use `accessToken` for `/tasks`
+4. **Refresh** tokens using `/auth/refresh`
+5. **Logout** → access token blacklisted
 
-Run tests:
+---
+
+## 🧪 Testing
+
+Run tests with:
+
 ```bash
 mvn test
 ```
 
-Suggested test coverage (add/keep in src/test):
-- AuthController login happy-path and invalid password  
-- AuthController refresh with blank token returns 400  
-- TaskController POST /tasks returns 201 with valid Authorization  
-- Ownership checks: updating/deleting another user’s task returns 403  
+Includes:
 
-## Troubleshooting
+* Unit tests for authentication & task APIs
+* Security tests with `spring-security-test`
 
-- Instant serialization error in errors  
-  Ensure the Java 8 time module is on the classpath:
-  ```xml
-  <dependency>
-    <groupId>com.fasterxml.jackson.datatype</groupId>
-    <artifactId>jackson-datatype-jsr310</artifactId>
-  </dependency>
-  ```
-  And set:
-  ```properties
-  spring.jackson.serialization.write-dates-as-timestamps=false
-  ```
-  Security error writers use the app’s ObjectMapper, so Instant serializes correctly in 401/403 JSON.
+---
 
-- Parameter binding on /tasks/{id}  
-  Controller uses @PathVariable("id") to avoid binding issues in environments that do not retain parameter names.
+## 📊 Evaluation Criteria (Assignment Goals)
+
+* RESTful API with correct HTTP status codes
+* Clean Spring Boot layers: Controller → Service → Repository
+* Authentication & Security with JWT and BCrypt
+* Global Exception Handling with `@RestControllerAdvice`
+* In-memory H2 DB, no external setup required
+* DTO separation from entities
+* Example requests provided with `curl`
+
+---
+
+💡 *Built with ❤️ using Spring Boot*
+
+---
+
+👉 Would you like me to also add a **Table of Contents with anchor links** at the top (so people can jump to sections easily), or keep it clean and linear?
