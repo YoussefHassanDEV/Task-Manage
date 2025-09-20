@@ -17,7 +17,6 @@ import java.util.Date;
 
 @Service
 public class AuthService {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
@@ -33,7 +32,7 @@ public class AuthService {
         this.blacklistService = blacklistService;
     }
 
-    public String register(RegisterRequest req) {
+    public void register(RegisterRequest req) {
         if (userRepository.existsByEmail(req.email())) {
             throw new IllegalArgumentException("Email already registered");
         }
@@ -43,7 +42,6 @@ public class AuthService {
                 .name(req.name())
                 .build();
         userRepository.save(u);
-        return jwtUtils.generateAccessToken(req.email());
     }
 
     public LoginResponse login(LoginRequest req) {
@@ -54,15 +52,13 @@ public class AuthService {
         }
         String access = jwtUtils.generateAccessToken(user.getEmail());
         String refresh = jwtUtils.generateRefreshToken(user.getEmail());
-        return new LoginResponse(
-                access,
-                jwtUtils.getAccessExpirationMillis(),
-                refresh,
-                jwtUtils.getRefreshExpirationMillis()
-        );
+        return new LoginResponse(access, jwtUtils.getAccessExpirationMillis(), refresh, jwtUtils.getRefreshExpirationMillis());
     }
 
     public LoginResponse refresh(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new BadCredentialsException("Invalid refresh token");
+        }
         Jws<Claims> jws = jwtUtils.parse(refreshToken);
         Claims claims = jws.getBody();
         Object typ = claims.get("typ");
@@ -70,30 +66,21 @@ public class AuthService {
             throw new BadCredentialsException("Invalid refresh token");
         }
         String email = claims.getSubject();
-        // Ensure the user still exists
         userRepository.findByEmail(email)
                 .orElseThrow(() -> new BadCredentialsException("Invalid refresh token"));
 
         String newAccess = jwtUtils.generateAccessToken(email);
-        String newRefresh = jwtUtils.generateRefreshToken(email); // rotation
-        return new LoginResponse(
-                newAccess,
-                jwtUtils.getAccessExpirationMillis(),
-                newRefresh,
-                jwtUtils.getRefreshExpirationMillis()
-        );
+        String newRefresh = jwtUtils.generateRefreshToken(email);
+        return new LoginResponse(newAccess, jwtUtils.getAccessExpirationMillis(), newRefresh, jwtUtils.getRefreshExpirationMillis());
     }
 
     public void logout(String bearerToken) {
-        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
-            return;
-        }
+        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) return;
         String token = bearerToken.substring(7);
         try {
             Jws<Claims> jws = jwtUtils.parse(token);
             Date exp = jws.getBody().getExpiration();
             blacklistService.blacklist(token, exp.getTime());
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) { }
     }
 }
