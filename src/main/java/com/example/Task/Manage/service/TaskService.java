@@ -33,7 +33,7 @@ public class TaskService {
         Task t = Task.builder()
                 .title(req.title())
                 .description(req.description())
-                .status(req.status() == null ? TaskStatus.OPEN : req.status())
+                .status(req.status() == null ? TaskStatus.INPROGRESS : req.status())
                 .owner(owner)
                 .build();
         Task saved = taskRepository.save(t);

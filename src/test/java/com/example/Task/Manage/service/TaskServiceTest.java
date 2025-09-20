@@ -34,7 +34,7 @@ class TaskServiceTest {
         String userEmail = "test@example.com";
         var owner = User.builder().id(1L).email(userEmail).passwordHash("p").build();
         var saved = Task.builder()
-                .id(42L).title("t").description("d").status(TaskStatus.OPEN).owner(owner)
+                .id(42L).title("t").description("d").status(TaskStatus.INPROGRESS).owner(owner)
                 .build();
         
         when(userRepository.findByEmail(userEmail)).thenReturn(java.util.Optional.of(owner));
@@ -47,6 +47,6 @@ class TaskServiceTest {
         // Assert
         assertEquals(42L, resp.id());
         assertEquals("t", resp.title());
-        assertEquals(TaskStatus.OPEN, resp.status());
+        assertEquals(TaskStatus.INPROGRESS, resp.status());
     }
 }
