@@ -30,7 +30,6 @@ class TaskServiceTest {
 
     @Test
     void create_returnsResponse() {
-        // Arrange
         String userEmail = "test@example.com";
         var owner = User.builder().id(1L).email(userEmail).passwordHash("p").build();
         var saved = Task.builder()
@@ -40,11 +39,9 @@ class TaskServiceTest {
         when(userRepository.findByEmail(userEmail)).thenReturn(java.util.Optional.of(owner));
         when(tasks.save(any(Task.class))).thenReturn(saved);
 
-        // Act
         TaskRequest request = new TaskRequest("t", "d", null);
         TaskResponse resp = service.create(userEmail, request);
 
-        // Assert
         assertEquals(42L, resp.id());
         assertEquals("t", resp.title());
         assertEquals(TaskStatus.INPROGRESS, resp.status());

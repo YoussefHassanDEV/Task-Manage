@@ -1,4 +1,3 @@
-// src/main/java/com/example/todo/config/SecurityConfig.java
 package com.example.Task.Manage.config;
 
 import com.example.Task.Manage.repository.UserRepository;

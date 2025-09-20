@@ -6,7 +6,6 @@ import lombok.Setter;
 @Setter
 @Getter
 public class TaskCreateRequest {
-    // Getters and setters
     private String title;
     private String description;
 

@@ -1,6 +1,6 @@
 package com.example.Task.Manage.model;
 
-import com.example.Task.Manage.Enum.TaskStatus;   // your enum
+import com.example.Task.Manage.Enum.TaskStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
