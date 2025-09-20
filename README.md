@@ -157,7 +157,7 @@ curl -X POST http://localhost:8080/auth/login \
 curl -X POST http://localhost:8080/tasks \
 -H "Authorization: Bearer <ACCESS>" \
 -H "Content-Type: application/json" \
--d '{"title":"My Task","description":"Details","status":"OPEN"}'
+-d '{"title":"My Task","description":"Details","status":"INPROGRESS"}'
 ```
 
 ---
@@ -210,7 +210,7 @@ Errors return structured JSON:
 * `id`
 * `title` *(required)*
 * `description`
-* `status` *(OPEN / DONE)*
+* `status` *(INPROGRESS / DONE)*
 * `owner` *(ManyToOne → User)*
 
 ---
@@ -272,3 +272,4 @@ Includes:
 💡 *Built with ❤️ using Spring Boot*
 
 ---
+
