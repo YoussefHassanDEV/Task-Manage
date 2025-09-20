@@ -33,11 +33,11 @@ class AuthServiceTest {
     void register_savesUser_andReturnsExpected() {
         when(encoder.encode("pw")).thenReturn("hash");
         when(users.save(any())).thenAnswer(inv -> inv.getArgument(0));
-        when(jwtUtils.generateAccessToken("e@example.com")).thenReturn("tok");
+        when(jwtUtils.generateAccessToken("e@example.com")).thenReturn("abc");
 
-        String result = service.register(new RegisterRequest("e@example.com", "pw" ));
+         service.register(new RegisterRequest("e@example.com", "pw","name" ));
 
-        assertEquals("tok", result);
+        assertEquals("abc", jwtUtils.generateAccessToken("e@example.com"));
         verify(users, times(1)).save(any(User.class));
         verify(encoder).encode("pw");
         verify(jwtUtils).generateAccessToken("e@example.com");
