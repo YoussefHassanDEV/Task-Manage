@@ -3,7 +3,7 @@ package com.example.Task.Manage.service;
 import com.example.Task.Manage.DTOs.Request.LoginRequest;
 import com.example.Task.Manage.DTOs.Request.RegisterRequest;
 import com.example.Task.Manage.DTOs.Response.LoginResponse;
-import com.example.Task.Manage.model.User; // IMPORTANT: domain entity, not org.apache.catalina.User
+import com.example.Task.Manage.model.User;
 import com.example.Task.Manage.repository.UserRepository;
 import com.example.Task.Manage.security.JwtUtils;
 import com.example.Task.Manage.security.TokenBlacklistService;
@@ -42,7 +42,7 @@ public class AuthService {
                 .passwordHash(passwordEncoder.encode(req.password()))
                 .build();
         userRepository.save(u);
-        return jwtUtils.generateToken(req.email());
+        return jwtUtils.generateAccessToken(req.email());
     }
 
     public LoginResponse login(LoginRequest req) {
@@ -51,17 +51,48 @@ public class AuthService {
         if (!passwordEncoder.matches(req.password(), user.getPasswordHash())) {
             throw new BadCredentialsException("Invalid credentials");
         }
-        String token = jwtUtils.generateToken(user.getEmail());
-        return new LoginResponse(token, jwtUtils.getExpirationMillis());
+        String access = jwtUtils.generateAccessToken(user.getEmail());
+        String refresh = jwtUtils.generateRefreshToken(user.getEmail());
+        return new LoginResponse(
+                access,
+                jwtUtils.getAccessExpirationMillis(),
+                refresh,
+                jwtUtils.getRefreshExpirationMillis()
+        );
+    }
+
+    public LoginResponse refresh(String refreshToken) {
+        Jws<Claims> jws = jwtUtils.parse(refreshToken);
+        Claims claims = jws.getBody();
+        Object typ = claims.get("typ");
+        if (typ == null || !"refresh".equals(typ.toString())) {
+            throw new BadCredentialsException("Invalid refresh token");
+        }
+        String email = claims.getSubject();
+        // Ensure the user still exists
+        userRepository.findByEmail(email)
+                .orElseThrow(() -> new BadCredentialsException("Invalid refresh token"));
+
+        String newAccess = jwtUtils.generateAccessToken(email);
+        String newRefresh = jwtUtils.generateRefreshToken(email); // rotation
+        return new LoginResponse(
+                newAccess,
+                jwtUtils.getAccessExpirationMillis(),
+                newRefresh,
+                jwtUtils.getRefreshExpirationMillis()
+        );
     }
 
     public void logout(String bearerToken) {
-        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) return;
+        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+            return;
+        }
         String token = bearerToken.substring(7);
         try {
-            Jws<Claims> jws = jwtUtils.validateAndParse(token);
+            Jws<Claims> jws = jwtUtils.parse(token);
             Date exp = jws.getBody().getExpiration();
             blacklistService.blacklist(token, exp.getTime());
-        } catch (Exception ignored) { }
+        } catch (Exception ignored) {
+        }
     }
 }

@@ -1,4 +1,3 @@
-// src/main/java/com/example/Task/Manage/service/TaskService.java
 package com.example.Task.Manage.service;
 
 import com.example.Task.Manage.DTOs.Request.TaskRequest;
@@ -46,8 +45,6 @@ public class TaskService {
         User owner = requireUser(email);
         return taskRepository.findByOwner(owner).stream().map(this::toDto).toList();
     }
-
-    // IMPORTANT: Signature matches the controller argument type
     public TaskResponse updateStatus(String email, Long id, UpdateTaskStatusRequest req) {
         User owner = requireUser(email);
         Task t = taskRepository.findById(id).orElseThrow(() -> new NotFoundException("Task not found"));

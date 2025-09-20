@@ -1,4 +1,3 @@
-// src/main/java/com/example/todo/exception/GlobalExceptionHandler.java
 package com.example.Task.Manage.exception;
 
 import com.example.Task.Manage.DTOs.Response.ErrorResponse;

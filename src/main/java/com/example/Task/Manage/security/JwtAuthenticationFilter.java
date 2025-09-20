@@ -44,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = auth.substring(7);
             if (!blacklist.isBlacklisted(token)) {
                 try {
-                    Jws<Claims> jws = jwtUtils.validateAndParse(token);
+                    Jws<Claims> jws = jwtUtils.parse(token);
                     String email = jws.getBody().getSubject();
                     Optional<User> userOpt = userRepository.findByEmail(email);
                     if (userOpt.isPresent()) {
@@ -53,7 +53,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     }
                 } catch (Exception ignored) {
-                    // invalid token -> leave unauthenticated
                 }
             }
         }

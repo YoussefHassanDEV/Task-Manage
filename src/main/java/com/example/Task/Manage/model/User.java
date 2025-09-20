@@ -1,4 +1,3 @@
-// src/main/java/com/example/todo/model/User.java
 package com.example.Task.Manage.model;
 
 import jakarta.persistence.*;

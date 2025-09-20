@@ -1,4 +1,3 @@
-// src/main/java/com/example/Task/Manage/model/Task.java
 package com.example.Task.Manage.model;
 
 import com.example.Task.Manage.Enum.TaskStatus;   // your enum
@@ -23,5 +22,5 @@ public class Task {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User owner;  // MUST be your domain User
+    private User owner;
 }
