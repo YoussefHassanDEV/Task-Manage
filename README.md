@@ -272,6 +272,3 @@ Includes:
 
 💡 *Built with ❤️ using Spring Boot*
 
----
-
-👉 Would you like me to also add a **Table of Contents with anchor links** at the top (so people can jump to sections easily), or keep it clean and linear?
